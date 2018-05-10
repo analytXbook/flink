@@ -61,7 +61,7 @@ under the License.
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
-			<version>3.0.7</version>
+			<version>3.0.8</version>
 		</dependency>
 
 		<dependency>
@@ -266,7 +266,7 @@ under the License.
 									<include>commons-lang:*</include>
 									<include>commons-codec:*</include>
 									<include>org.apache.commons:commons-lang3</include>
-									<include>org.codehaus.janino:*</include>
+									<!-- <include>org.codehaus.janino:*</include> -->
 									<include>org.reflections:*</include>
 									<include>joda-time:*</include>
 								</includes>
