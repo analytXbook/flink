@@ -1234,6 +1234,10 @@ under the License.
 									</excludes>
 								</relocation>
 								<relocation>
+									<pattern>com.fasterxml.jackson</pattern>
+									<shadedPattern>org.apache.flink.shaded.com.fasterxml.jackson</shadedPattern>
+								</relocation>
+								<relocation>
 									<pattern>org.objectweb.asm</pattern>
 									<shadedPattern>org.apache.flink.shaded.org.objectweb.asm</shadedPattern>
 								</relocation>
