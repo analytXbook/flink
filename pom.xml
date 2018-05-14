@@ -493,7 +493,7 @@ under the License.
 			<id>scala-2.11</id>
 			<activation>
 				<property>
-					<name>scala-2.11</name>
+					<name>!scala-2.11</name>
 				</property>
 			</activation>
 			<properties>
@@ -1222,6 +1222,7 @@ under the License.
 									<include>org.apache.flink:force-shading</include>
 									<include>com.google.guava:*</include>
 									<include>org.ow2.asm:*</include>
+									<!--<include>com.fasterxml.jackson:*</include>-->
 								</includes>
 							</artifactSet>
 							<relocations>
@@ -1233,10 +1234,10 @@ under the License.
 										<exclude>com.google.inject.**</exclude>
 									</excludes>
 								</relocation>
-								<relocation>
-									<pattern>com.fasterxml.jackson</pattern>
-									<shadedPattern>org.apache.flink.shaded.com.fasterxml.jackson</shadedPattern>
-								</relocation>
+								<!--<relocation>-->
+									<!--<pattern>com.fasterxml.jackson</pattern>-->
+									<!--<shadedPattern>org.apache.flink.shaded.com.fasterxml.jackson</shadedPattern>-->
+								<!--</relocation>-->
 								<relocation>
 									<pattern>org.objectweb.asm</pattern>
 									<shadedPattern>org.apache.flink.shaded.org.objectweb.asm</shadedPattern>
