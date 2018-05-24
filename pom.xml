@@ -206,11 +206,11 @@ under the License.
 	</dependencies>
 
 	<!-- this section defines the module versions that are used if nothing else is specified. -->
-	
+
 	<dependencyManagement>
-		<!-- WARN: 
-			DO NOT put 	guava, 
-						protobuf, 
+		<!-- WARN:
+			DO NOT put 	guava,
+						protobuf,
 						asm,
 						netty
 					here. It will overwrite Hadoop's guava dependency (even though we handle it
@@ -256,7 +256,7 @@ under the License.
 				<artifactId>avro</artifactId>
 				<version>1.7.7</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro-ipc</artifactId>
@@ -341,7 +341,7 @@ under the License.
 				<artifactId>joda-convert</artifactId>
 				<version>1.7</version>
 			</dependency>
-			
+
 			<!-- kryo used in different versions by Flink an chill -->
 			<dependency>
 				<groupId>com.esotericsoftware.kryo</groupId>
@@ -487,7 +487,7 @@ under the License.
 	</dependencyManagement>
 
 	<profiles>
-		
+
 		<!-- Profile to switch to Scala Version 2.11 -->
 		<profile>
 			<id>scala-2.11</id>
@@ -509,7 +509,7 @@ under the License.
 				<module>flink-yarn-tests</module>
 			</modules>
 		</profile>
-		
+
 		<profile>
 			<id>vendor-repos</id>
 			<!-- Add vendor maven repositories -->
@@ -734,7 +734,7 @@ under the License.
 				</dependency>
 			</dependencies>
 		</profile>
-		
+
 		<profile>
 			<id>release</id>
 			<properties>
@@ -895,7 +895,35 @@ under the License.
 					</archive>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version><!--$NO-MVN-MAN-VER$-->
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version><!--$NO-MVN-MAN-VER$-->
+				<configuration>
+					<quiet>true</quiet>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
@@ -1257,7 +1285,7 @@ under the License.
 			</plugin>
 		</plugins>
 
-		<!-- Plugin configurations for plugins activated in sub-projects --> 
+		<!-- Plugin configurations for plugins activated in sub-projects -->
 
 		<pluginManagement>
 			<plugins>
@@ -1268,7 +1296,7 @@ under the License.
 					<artifactId>maven-shade-plugin</artifactId>
 					<version>2.4.1</version>
 				</plugin>
-				
+
 				<!-- Disable certain plugins in Eclipse -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
