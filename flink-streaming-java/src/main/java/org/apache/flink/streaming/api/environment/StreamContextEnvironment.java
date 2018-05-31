@@ -19,6 +19,7 @@ package org.apache.flink.streaming.api.environment;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.client.program.ContextEnvironment;
 import org.apache.flink.client.program.DetachedEnvironment;
 
@@ -51,6 +52,11 @@ public class StreamContextEnvironment extends StreamExecutionEnvironment {
 					ConfigConstants.DEFAULT_PARALLELISM_KEY,
 					ConfigConstants.DEFAULT_PARALLELISM));
 		}
+	}
+
+	@Override
+	public JobSubmissionResult executeDetached(String jobName) throws Exception {
+		return execute(jobName);
 	}
 
 	@Override

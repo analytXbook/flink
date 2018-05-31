@@ -33,6 +33,7 @@ import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.cache.DistributedCache;
 import org.apache.flink.api.common.functions.InvalidTypesException;
 import org.apache.flink.api.common.functions.StoppableFunction;
@@ -1504,6 +1505,21 @@ public abstract class StreamExecutionEnvironment {
 	 * the program that have resulted in a "sink" operation. Sink operations are
 	 * for example printing results or forwarding them to a message queue.
 	 *
+	 * <p>The program execution will be logged and displayed with a generated
+	 * default name.
+	 *
+	 * @return The result of the job execution, containing elapsed time and accumulators.
+	 * @throws Exception which occurs during job execution.
+	 */
+	public JobSubmissionResult executeDetached() throws Exception {
+		return executeDetached(DEFAULT_JOB_NAME);
+	}
+
+	/**
+	 * Triggers the program execution. The environment will execute all parts of
+	 * the program that have resulted in a "sink" operation. Sink operations are
+	 * for example printing results or forwarding them to a message queue.
+	 *
 	 * <p>The program execution will be logged and displayed with the provided name
 	 *
 	 * @param jobName
@@ -1512,6 +1528,20 @@ public abstract class StreamExecutionEnvironment {
 	 * @throws Exception which occurs during job execution.
 	 */
 	public abstract JobExecutionResult execute(String jobName) throws Exception;
+
+	/**
+	 * Triggers the program execution. The environment will execute all parts of
+	 * the program that have resulted in a "sink" operation. Sink operations are
+	 * for example printing results or forwarding them to a message queue.
+	 *
+	 * <p>The program execution will be logged and displayed with the provided name
+	 *
+	 * @param jobName
+	 * 		Desired name of the job
+	 * @return The result of the job execution, containing elapsed time and accumulators.
+	 * @throws Exception which occurs during job execution.
+	 */
+	public abstract JobSubmissionResult executeDetached(String jobName) throws Exception;
 
 	/**
 	 * Getter of the {@link org.apache.flink.streaming.api.graph.StreamGraph} of the streaming job.

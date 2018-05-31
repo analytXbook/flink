@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.flink.annotation.Public;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.client.program.JobWithJars;
@@ -169,11 +170,20 @@ public class RemoteStreamEnvironment extends StreamExecutionEnvironment {
 	}
 
 	@Override
+	public JobSubmissionResult executeDetached(String jobName) throws ProgramInvocationException {
+		return execute(jobName, true);
+	}
+
+	@Override
 	public JobExecutionResult execute(String jobName) throws ProgramInvocationException {
+		return execute(jobName, false).getJobExecutionResult();
+	}
+
+	public JobSubmissionResult execute(String jobName, boolean detached) throws ProgramInvocationException {
 		StreamGraph streamGraph = getStreamGraph();
 		streamGraph.setJobName(jobName);
 		transformations.clear();
-		return executeRemotely(streamGraph, jarFiles);
+		return executeRemotely(streamGraph, jarFiles, detached);
 	}
 
 	/**
@@ -185,7 +195,7 @@ public class RemoteStreamEnvironment extends StreamExecutionEnvironment {
 	 * 			  List of jar file URLs to ship to the cluster
 	 * @return The result of the job execution, containing elapsed time and accumulators.
 	 */
-	protected JobExecutionResult executeRemotely(StreamGraph streamGraph, List<URL> jarFiles) throws ProgramInvocationException {
+	protected JobSubmissionResult executeRemotely(StreamGraph streamGraph, List<URL> jarFiles, boolean detached) throws ProgramInvocationException {
 		if (LOG.isInfoEnabled()) {
 			LOG.info("Running remotely at {}:{}", host, port);
 		}
@@ -202,6 +212,7 @@ public class RemoteStreamEnvironment extends StreamExecutionEnvironment {
 		ClusterClient client;
 		try {
 			client = new StandaloneClusterClient(configuration);
+			client.setDetached(detached);
 			client.setPrintStatusDuringExecution(getConfig().isSysoutLoggingEnabled());
 		}
 		catch (Exception e) {

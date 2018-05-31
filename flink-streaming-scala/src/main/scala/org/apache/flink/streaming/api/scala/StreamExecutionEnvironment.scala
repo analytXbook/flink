@@ -626,6 +626,26 @@ class StreamExecutionEnvironment(javaEnv: JavaEnv) {
    * The program execution will be logged and displayed with a generated
    * default name.
    */
+  def executeDetached() = javaEnv.executeDetached()
+
+  /**
+   * Triggers the program execution. The environment will execute all parts of
+   * the program that have resulted in a "sink" operation. Sink operations are
+   * for example printing results or forwarding them to a message queue.
+   * 
+   * The program execution will be logged and displayed with a generated
+   * default name.
+   */
+  def executeDetached(jobName: String) = javaEnv.executeDetached(jobName)
+
+  /**
+   * Triggers the program execution. The environment will execute all parts of
+   * the program that have resulted in a "sink" operation. Sink operations are
+   * for example printing results or forwarding them to a message queue.
+   * 
+   * The program execution will be logged and displayed with a generated
+   * default name.
+   */
   def execute() = javaEnv.execute()
 
   /**

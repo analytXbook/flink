@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.functions.RichFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
@@ -215,6 +216,11 @@ public class DataGenerators {
 
 			@Override
 			public JobExecutionResult execute(String jobName) throws Exception {
+				return null;
+			}
+
+			@Override
+			public JobSubmissionResult executeDetached(String jobName) throws Exception {
 				return null;
 			}
 		}

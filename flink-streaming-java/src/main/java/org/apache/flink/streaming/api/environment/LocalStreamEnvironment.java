@@ -20,6 +20,7 @@ package org.apache.flink.streaming.api.environment;
 import org.apache.flink.annotation.Public;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
@@ -71,6 +72,19 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		}
 
 		this.conf = config == null ? new Configuration() : config;
+	}
+
+	/**
+	 * Executes the JobGraph of the on a mini cluster of CLusterUtil with a user
+	 * specified name.
+	 *
+	 * @param jobName
+	 *            name of the job
+	 * @return The result of the job execution, containing elapsed time and accumulators.
+	 */
+	@Override
+	public JobSubmissionResult executeDetached(String jobName) throws Exception {
+		return execute(jobName);
 	}
 
 	/**

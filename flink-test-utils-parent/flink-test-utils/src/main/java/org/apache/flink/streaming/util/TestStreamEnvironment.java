@@ -19,6 +19,7 @@
 package org.apache.flink.streaming.util;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
@@ -63,9 +64,7 @@ public class TestStreamEnvironment extends StreamExecutionEnvironment {
 		this(miniCluster, parallelism, Collections.<Path>emptyList(), Collections.<URL>emptyList());
 	}
 
-	
-	@Override
-	public JobExecutionResult execute(String jobName) throws Exception {
+	public JobSubmissionResult execute(String jobName, boolean detached) throws Exception {
 		final StreamGraph streamGraph = getStreamGraph();
 		streamGraph.setJobName(jobName);
 		final JobGraph jobGraph = streamGraph.getJobGraph();
@@ -76,7 +75,21 @@ public class TestStreamEnvironment extends StreamExecutionEnvironment {
 
 		jobGraph.setClasspaths(new ArrayList<>(classPaths));
 
-		return miniCluster.submitJobAndWait(jobGraph, false);
+		if (detached) {
+			return miniCluster.submitJobDetached(jobGraph);
+		} else {
+			return miniCluster.submitJobAndWait(jobGraph, false);
+		}
+	}
+
+	@Override
+	public JobExecutionResult execute(String jobName) throws Exception {
+		return execute(jobName, false).getJobExecutionResult();
+	}
+
+	@Override
+	public JobSubmissionResult executeDetached(String jobName) throws Exception {
+		return execute(jobName, true);
 	}
 
 	// ------------------------------------------------------------------------

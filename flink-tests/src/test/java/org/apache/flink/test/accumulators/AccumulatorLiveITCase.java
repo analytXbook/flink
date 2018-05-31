@@ -26,6 +26,7 @@ import akka.util.Timeout;
 
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.JobID;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.Plan;
 import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.accumulators.IntCounter;
@@ -390,6 +391,14 @@ public class AccumulatorLiveITCase extends TestLogger {
 		@Override
 		public JobExecutionResult execute(String jobName) throws Exception {
 			throw new RuntimeException("This should not be called.");
+		}
+
+		public JobSubmissionResult executeDetached() throws Exception {
+			return executeDetached("default");
+		}
+
+		public JobSubmissionResult executeDetached(String jobName) throws Exception {
+			return execute(jobName);
 		}
 	}
 }
