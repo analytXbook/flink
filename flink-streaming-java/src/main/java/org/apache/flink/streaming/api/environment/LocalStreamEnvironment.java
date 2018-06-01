@@ -22,15 +22,22 @@ import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.client.program.ClusterClient;
+import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.TaskManagerOptions;
+import org.apache.flink.runtime.client.JobExecutionException;
+import org.apache.flink.runtime.clusterframework.messages.GetClusterStatusResponse;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
 
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.util.List;
 
 /**
  * The LocalStreamEnvironment is a StreamExecutionEnvironment that runs the program locally,
@@ -51,6 +58,8 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 
 	/** The configuration to use for the local cluster. */
 	private final Configuration conf;
+
+	LocalFlinkMiniCluster exec;
 
 	/**
 	 * Creates a new local stream environment that uses the default configuration.
@@ -97,6 +106,18 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 	 */
 	@Override
 	public JobExecutionResult execute(String jobName) throws Exception {
+		return execute(jobName, false).getJobExecutionResult();
+	}
+
+	/**
+	 * Executes the JobGraph of the on a mini cluster of CLusterUtil with a user
+	 * specified name.
+	 *
+	 * @param jobName
+	 *            name of the job
+	 * @return The result of the job execution, containing elapsed time and accumulators.
+	 */
+	public JobSubmissionResult execute(String jobName, boolean detached) throws Exception {
 		// transform the streaming program into a JobGraph
 		StreamGraph streamGraph = getStreamGraph();
 		streamGraph.setJobName(jobName);
@@ -116,14 +137,88 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 			LOG.info("Running job on local embedded Flink mini cluster");
 		}
 
-		LocalFlinkMiniCluster exec = new LocalFlinkMiniCluster(configuration, true);
-		try {
+		if (exec == null) {
+			exec = new LocalFlinkMiniCluster(configuration, true);
 			exec.start();
-			return exec.submitJobAndWait(jobGraph, getConfig().isSysoutLoggingEnabled());
 		}
-		finally {
-			transformations.clear();
-			exec.stop();
+
+		if (detached) {
+			return exec.submitJobDetached(jobGraph);
+		} else {
+			try {
+				return exec.submitJobAndWait(jobGraph, getConfig().isSysoutLoggingEnabled());
+			} finally {
+				transformations.clear();
+				exec = null;
+				exec.stop();
+			}
 		}
+	}
+
+	@Override
+	public ClusterClient getClusterClient() throws Exception{
+		class LocalFlinkMiniClusterClient extends ClusterClient {
+			LocalFlinkMiniCluster cluster;
+			public LocalFlinkMiniClusterClient(Configuration configuration) throws Exception {
+				super(configuration);
+				this.cluster = exec;
+			}
+
+			@Override
+			public void waitForClusterToBeReady() {
+
+			}
+
+			@Override
+			public String getWebInterfaceURL() {
+				return null;
+			}
+
+			@Override
+			public GetClusterStatusResponse getClusterStatus() {
+				return null;
+			}
+
+			@Override
+			protected List<String> getNewMessages() {
+				return null;
+			}
+
+			@Override
+			public String getClusterIdentifier() {
+				return null;
+			}
+
+			@Override
+			protected void finalizeCluster() {
+
+			}
+
+			@Override
+			public int getMaxSlots() {
+				return 0;
+			}
+
+			@Override
+			public boolean hasUserJarsInClassPath(List<URL> userJarFiles) {
+				return false;
+			}
+
+			@Override
+			protected JobSubmissionResult submitJob(JobGraph jobGraph, ClassLoader classLoader) throws ProgramInvocationException {
+				try {
+					return cluster.submitJobDetached(jobGraph);
+				} catch (JobExecutionException e) {
+					throw new ProgramInvocationException(e.getMessage());
+				}
+			}
+		}
+
+		Configuration configuration = new Configuration();
+		configuration.addAll(this.conf);
+
+		configuration.setLong(TaskManagerOptions.MANAGED_MEMORY_SIZE, -1L);
+		configuration.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, getMaxParallelism());
+		return new LocalFlinkMiniClusterClient(configuration);
 	}
 }

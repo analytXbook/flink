@@ -657,6 +657,8 @@ class StreamExecutionEnvironment(javaEnv: JavaEnv) {
    */
   def execute(jobName: String) = javaEnv.execute(jobName)
 
+  def getClusterClient() = javaEnv.getClusterClient()
+
   /**
    * Creates the plan with which the system will execute the program, and
    * returns it as a String using a JSON representation of the execution data
