@@ -54,6 +54,7 @@ import org.apache.flink.api.java.typeutils.MissingTypeInfo;
 import org.apache.flink.api.java.typeutils.PojoTypeInfo;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
+import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.client.program.ContextEnvironment;
 import org.apache.flink.client.program.OptimizerPlanEnvironment;
 import org.apache.flink.client.program.PreviewPlanEnvironment;
@@ -645,6 +646,10 @@ public abstract class StreamExecutionEnvironment {
 	@PublicEvolving
 	public TimeCharacteristic getStreamTimeCharacteristic() {
 		return timeCharacteristic;
+	}
+
+	public ClusterClient getClusterClient() throws Exception {
+		throw new Exception("Not implemented");
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -38,6 +38,7 @@ import org.apache.flink.client.program.StandaloneClusterClient;
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 
+import org.apache.flink.configuration.JobManagerOptions;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -236,6 +237,19 @@ public class RemoteStreamEnvironment extends StreamExecutionEnvironment {
 				LOG.warn("Could not properly shut down the cluster client.", e);
 			}
 		}
+	}
+
+	@Override
+	public ClusterClient getClusterClient() throws Exception {
+		Configuration configuration = new Configuration();
+		configuration.addAll(this.clientConfiguration);
+
+		configuration.setString(JobManagerOptions.ADDRESS, host);
+		configuration.setInteger(JobManagerOptions.PORT, port);
+
+		ClusterClient client = new StandaloneClusterClient(configuration);
+		client.setPrintStatusDuringExecution(getConfig().isSysoutLoggingEnabled());
+		return client;
 	}
 
 	@Override
