@@ -19,6 +19,7 @@
 package org.apache.flink.streaming.api.operators;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.functions.FoldFunction;
 import org.apache.flink.api.common.functions.util.ListCollector;
 import org.apache.flink.api.common.state.FoldingState;
@@ -322,6 +323,11 @@ public class FoldApplyProcessWindowFunctionTest {
 
 		@Override
 		public JobExecutionResult execute(String jobName) throws Exception {
+			return null;
+		}
+
+		@Override
+		public JobSubmissionResult executeDetached(String jobName) throws Exception {
 			return null;
 		}
 	}
