@@ -64,7 +64,7 @@ derived from these by transforming them using API methods such as `map`, `filter
 Anatomy of a Flink Program
 --------------------------
 
-Flink program programs look like regular programs that transform collections of data.
+Flink programs look like regular programs that transform collections of data.
 Each program consists of the same basic parts:
 
 1. Obtain an `execution environment`,
@@ -450,7 +450,7 @@ These are valid field expressions for the example code above:
 {:.no_toc}
 
 An additional way to define keys are "key selector" functions. A key selector function
-takes a single element as input and returns the key for the element. The key can be of any type and be derived from arbitrary computations.
+takes a single element as input and returns the key for the element. The key can be of any type and be derived from deterministic computations.
 
 The following example shows a key selector function that simply returns the field of an object:
 

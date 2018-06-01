@@ -36,13 +36,24 @@ abstract class FlinkTable[T](
 
   if (fieldIndexes.length != fieldNames.length) {
     throw new TableException(
-      "Number of field indexes and field names must be equal.")
+      s"Number of field names and field indexes must be equal.\n" +
+        s"Number of names is ${fieldNames.length}, number of indexes is ${fieldIndexes.length}.\n" +
+        s"List of column names: ${fieldNames.mkString("[", ", ", "]")}.\n" +
+        s"List of column indexes: ${fieldIndexes.mkString("[", ", ", "]")}.")
   }
 
   // check uniqueness of field names
   if (fieldNames.length != fieldNames.toSet.size) {
+    val duplicateFields = fieldNames
+      // count occurences of field names
+      .groupBy(identity).mapValues(_.length)
+      // filter for occurences > 1 and map to field name
+      .filter(g => g._2 > 1).keys
+
     throw new TableException(
-      "Table field names must be unique.")
+      s"Field names must be unique.\n" +
+        s"List of duplicate fields: ${duplicateFields.mkString("[", ", ", "]")}.\n" +
+        s"List of all fields: ${fieldNames.mkString("[", ", ", "]")}.")
   }
 
   val fieldTypes: Array[TypeInformation[_]] =
@@ -56,9 +67,13 @@ abstract class FlinkTable[T](
         }
         fieldIndexes.map(cType.getTypeAt(_).asInstanceOf[TypeInformation[_]])
       case aType: AtomicType[_] =>
-        if (fieldIndexes.length != 1 || fieldIndexes(0) != 0) {
+        if (fieldIndexes.exists(_ > 0)) {
           throw new TableException(
-            "Non-composite input type may have only a single field and its index must be 0.")
+            "Invalid index for table of atomic type encountered. Please report a bug.")
+        }
+        if (fieldIndexes.count(_ == 0) > 1) {
+          throw new TableException(
+            "Atomic input type may have only be referenced by a single table field.")
         }
         Array(aType)
     }
