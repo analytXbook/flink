@@ -211,6 +211,15 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 					throw new ProgramInvocationException(e.getMessage());
 				}
 			}
+
+            @Override
+            public JobSubmissionResult runDetached (JobGraph jobGraph, ClassLoader classLoader) throws ProgramInvocationException {
+                try {
+                    return cluster.submitJobDetached(jobGraph);
+                } catch (JobExecutionException e) {
+                    throw new ProgramInvocationException(e.getMessage());
+                }
+            }
 		}
 
 		return new LocalFlinkMiniClusterClient(getLocalConfig());
