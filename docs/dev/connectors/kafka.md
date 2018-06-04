@@ -122,14 +122,14 @@ DataStream<String> stream = env
 </div>
 <div data-lang="scala" markdown="1">
 {% highlight scala %}
-val properties = new Properties();
-properties.setProperty("bootstrap.servers", "localhost:9092");
+val properties = new Properties()
+properties.setProperty("bootstrap.servers", "localhost:9092")
 // only required for Kafka 0.8
-properties.setProperty("zookeeper.connect", "localhost:2181");
-properties.setProperty("group.id", "test");
+properties.setProperty("zookeeper.connect", "localhost:2181")
+properties.setProperty("group.id", "test")
 stream = env
     .addSource(new FlinkKafkaConsumer08[String]("topic", new SimpleStringSchema(), properties))
-    .print
+    .print()
 {% endhighlight %}
 </div>
 </div>
@@ -346,17 +346,17 @@ DataStream<String> stream = env
 </div>
 <div data-lang="scala" markdown="1">
 {% highlight scala %}
-val properties = new Properties();
-properties.setProperty("bootstrap.servers", "localhost:9092");
+val properties = new Properties()
+properties.setProperty("bootstrap.servers", "localhost:9092")
 // only required for Kafka 0.8
-properties.setProperty("zookeeper.connect", "localhost:2181");
-properties.setProperty("group.id", "test");
+properties.setProperty("zookeeper.connect", "localhost:2181")
+properties.setProperty("group.id", "test")
 
-val myConsumer = new FlinkKafkaConsumer08[String]("topic", new SimpleStringSchema(), properties);
-myConsumer.assignTimestampsAndWatermarks(new CustomWatermarkEmitter());
+val myConsumer = new FlinkKafkaConsumer08[String]("topic", new SimpleStringSchema(), properties)
+myConsumer.assignTimestampsAndWatermarks(new CustomWatermarkEmitter())
 stream = env
     .addSource(myConsumer)
-    .print
+    .print()
 {% endhighlight %}
 </div>
 </div>
@@ -532,7 +532,7 @@ we retrieved and emitted successfully. The `committed-offsets` is the last commi
 The Kafka Consumers in Flink commit the offsets back to Zookeeper (Kafka 0.8) or the Kafka brokers (Kafka 0.9+). If checkpointing
 is disabled, offsets are committed periodically.
 With checkpointing, the commit happens once all operators in the streaming topology have confirmed that they've created a checkpoint of their state. 
-This provides users with at-least-once semantics for the offsets committed to Zookeer or the broker. For offsets checkpointed to Flink, the system 
+This provides users with at-least-once semantics for the offsets committed to Zookeeper or the broker. For offsets checkpointed to Flink, the system 
 provides exactly once guarantees.
 
 The offsets committed to ZK or the broker can also be used to track the read progress of the Kafka consumer. The difference between

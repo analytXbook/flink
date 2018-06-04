@@ -27,6 +27,7 @@ import org.apache.calcite.rex._
 import org.apache.calcite.sql.SqlOperator
 import org.apache.calcite.sql.`type`.SqlTypeName._
 import org.apache.calcite.sql.fun.SqlStdOperatorTable._
+import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.flink.api.common.functions._
 import org.apache.flink.api.common.io.GenericInputFormat
 import org.apache.flink.api.common.typeinfo._
@@ -1284,7 +1285,8 @@ class CodeGenerator(
         generateNonNullLiteral(resultType, decimalField)
 
       case VARCHAR | CHAR =>
-        generateNonNullLiteral(resultType, "\"" + value.toString + "\"")
+        val escapedValue = StringEscapeUtils.ESCAPE_JAVA.translate(value.toString)
+        generateNonNullLiteral(resultType, "\"" + escapedValue + "\"")
 
       case SYMBOL =>
         generateSymbol(value.asInstanceOf[Enum[_]])
@@ -1782,21 +1784,27 @@ class CodeGenerator(
     }
 
     val wrappedCode = if (nullCheck && !isReference(fieldType)) {
+      // assumes that fieldType is a boxed primitive.
       s"""
-        |$tmpTypeTerm $tmpTerm = $unboxedFieldCode;
-        |boolean $nullTerm = $tmpTerm == null;
+        |boolean $nullTerm = $fieldTerm == null;
         |$resultTypeTerm $resultTerm;
         |if ($nullTerm) {
         |  $resultTerm = $defaultValue;
         |}
         |else {
-        |  $resultTerm = $tmpTerm;
+        |  $resultTerm = $fieldTerm;
         |}
         |""".stripMargin
     } else if (nullCheck) {
       s"""
-        |$resultTypeTerm $resultTerm = $unboxedFieldCode;
         |boolean $nullTerm = $fieldTerm == null;
+        |$resultTypeTerm $resultTerm;
+        |if ($nullTerm) {
+        |  $resultTerm = $defaultValue;
+        |}
+        |else {
+        |  $resultTerm = $unboxedFieldCode;
+        |}
         |""".stripMargin
     } else {
       s"""

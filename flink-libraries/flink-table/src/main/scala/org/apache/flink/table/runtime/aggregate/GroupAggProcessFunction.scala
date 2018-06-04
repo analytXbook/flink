@@ -26,10 +26,11 @@ import org.apache.flink.util.Collector
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.java.typeutils.RowTypeInfo
 import org.apache.flink.api.common.state.ValueState
+
 import org.apache.flink.table.api.{StreamQueryConfig, Types}
 import org.apache.flink.table.codegen.{Compiler, GeneratedAggregationsFunction}
-import org.slf4j.{Logger, LoggerFactory}
 import org.apache.flink.table.runtime.types.CRow
+import org.apache.flink.table.util.Logging
 
 /**
   * Aggregate Function used for the groupby (without window) aggregate
@@ -43,9 +44,9 @@ class GroupAggProcessFunction(
     private val generateRetraction: Boolean,
     private val queryConfig: StreamQueryConfig)
   extends ProcessFunctionWithCleanupState[CRow, CRow](queryConfig)
-    with Compiler[GeneratedAggregations] {
+    with Compiler[GeneratedAggregations]
+    with Logging {
 
-  val LOG: Logger = LoggerFactory.getLogger(this.getClass)
   private var function: GeneratedAggregations = _
 
   private var newRow: CRow = _
@@ -97,9 +98,12 @@ class GroupAggProcessFunction(
     if (null == accumulators) {
       firstRow = true
       accumulators = function.createAccumulators()
-      inputCnt = 0L
     } else {
       firstRow = false
+    }
+
+    if (null == inputCnt) {
+      inputCnt = 0L
     }
 
     // Set group keys value to the final output

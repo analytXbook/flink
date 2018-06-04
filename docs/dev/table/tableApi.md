@@ -131,7 +131,7 @@ val result: Table = orders
         .select('a.lowerCase(), 'b, 'rowtime)
         .window(Tumble over 1.hour on 'rowtime as 'hourlyWindow)
         .groupBy('hourlyWindow, 'a)
-        .select('a, 'hourlyWindow.end as 'hour, 'b.avg as 'avgBillingAmount);
+        .select('a, 'hourlyWindow.end as 'hour, 'b.avg as 'avgBillingAmount)
 {% endhighlight %}
 
 </div>
@@ -355,7 +355,7 @@ Table result = orders
       </td>
       <td>
        <p>Similar to a SQL OVER clause. Over window aggregates are computed for each row, based on a window (range) of preceding and succeeding rows. See the <a href="#over-windows">over windows section</a> for more details.</p>
-       {% highlight scala %}
+{% highlight java %}
 Table orders = tableEnv.scan("Orders");
 Table result = orders
     // define window
@@ -364,8 +364,8 @@ Table result = orders
       .orderBy("rowtime")
       .preceding("UNBOUNDED_RANGE")
       .following("CURRENT_RANGE")
-      .as("w")
-    .select("a, b.avg over w, b.max over w, b.min over w") // sliding aggregate
+      .as("w"))
+    .select("a, b.avg over w, b.max over w, b.min over w"); // sliding aggregate
 {% endhighlight %}
        <p><b>Note:</b> All aggregates must be defined over the same window, i.e., same partitioning, sorting, and range. Currently, only windows with PRECEDING (UNBOUNDED and bounded) to CURRENT ROW range are supported. Ranges with FOLLOWING are not supported yet. ORDER BY must be specified on a single <a href="streaming.html#time-attributes">time attribute</a>.</p>
       </td>
@@ -446,7 +446,7 @@ val result: Table = orders
       preceding UNBOUNDED_RANGE
       following CURRENT_RANGE
       as 'w)
-    .select('a, 'b.avg over 'w, 'b.max over 'w, 'b.min over 'w,) // sliding aggregate
+    .select('a, 'b.avg over 'w, 'b.max over 'w, 'b.min over 'w) // sliding aggregate
 {% endhighlight %}
        <p><b>Note:</b> All aggregates must be defined over the same window, i.e., same partitioning, sorting, and range. Currently, only windows with PRECEDING (UNBOUNDED and bounded) to CURRENT ROW range are supported. Ranges with FOLLOWING are not supported yet. ORDER BY must be specified on a single <a href="streaming.html#time-attributes">time attribute</a>.</p>
       </td>
@@ -545,7 +545,7 @@ Table result = left.fullOuterJoin(right, "a = d").select("a, b, e");
     </tr>
     <tr>
     	<td>
-        <strong>TableFunction Join</strong><br>
+        <strong>TableFunction Inner Join</strong><br>
         <span class="label label-primary">Batch</span> <span class="label label-primary">Streaming</span>
       </td>
     	<td>
@@ -559,7 +559,7 @@ tEnv.registerFunction("split", split);
 // join
 Table orders = tableEnv.scan("Orders");
 Table result = orders
-    .join(new Table(tEnv, "split(c)").as("s", "t", "v")))
+    .join(new Table(tEnv, "split(c)").as("s", "t", "v"))
     .select("a, b, s, t, v");
 {% endhighlight %}
       </td>
@@ -571,6 +571,7 @@ Table result = orders
       </td>
       <td>
         <p>Joins a table with a the results of a table function. Each row of the left (outer) table is joined with all rows produced by the corresponding call of the table function. If a table function call returns an empty result, the corresponding outer row is preserved and the result padded with null values.
+        <p><b>Note:</b> Currently, the predicate of a table function left outer join can only be empty or literal <code>true</code>.</p>
         </p>
 {% highlight java %}
 // register function
@@ -580,7 +581,7 @@ tEnv.registerFunction("split", split);
 // join
 Table orders = tableEnv.scan("Orders");
 Table result = orders
-    .leftOuterJoin(new Table(tEnv, "split(c)").as("s", "t", "v")))
+    .leftOuterJoin(new Table(tEnv, "split(c)").as("s", "t", "v"))
     .select("a, b, s, t, v");
 {% endhighlight %}
       </td>
@@ -609,9 +610,9 @@ Table result = orders
       <td>
         <p>Similar to a SQL JOIN clause. Joins two tables. Both tables must have distinct field names and an equality join predicate must be defined using a where or filter operator.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'd, 'e, 'f);
-val result = left.join(right).where('a === 'd).select('a, 'b, 'e);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'd, 'e, 'f)
+val result = left.join(right).where('a === 'd).select('a, 'b, 'e)
 {% endhighlight %}
       </td>
     </tr>
@@ -662,7 +663,7 @@ val result = left.fullOuterJoin(right, 'a === 'd).select('a, 'b, 'e)
     </tr>
     <tr>
     	<td>
-        <strong>TableFunction Join</strong><br>
+        <strong>TableFunction Inner Join</strong><br>
         <span class="label label-primary">Batch</span> <span class="label label-primary">Streaming</span>
       </td>
     	<td>
@@ -685,6 +686,7 @@ val result: Table = table
         <span class="label label-primary">Batch</span> <span class="label label-primary">Streaming</span></td>
     	<td>
         <p>Joins a table with a the results of a table function. Each row of the left (outer) table is joined with all rows produced by the corresponding call of the table function. If a table function call returns an empty result, the corresponding outer row is preserved and the result padded with null values.
+        <p><b>Note:</b> Currently, the predicate of a table function left outer join can only be empty or literal <code>true</code>.</p>
         </p>
 {% highlight scala %}
 // instantiate function
@@ -829,9 +831,9 @@ Table result = left.minusAll(right);
       <td>
         <p>Similar to a SQL UNION clause. Unions two tables with duplicate records removed, both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'a, 'b, 'c);
-val result = left.union(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'a, 'b, 'c)
+val result = left.union(right)
 {% endhighlight %}
       </td>
     </tr>
@@ -845,9 +847,9 @@ val result = left.union(right);
       <td>
         <p>Similar to a SQL UNION ALL clause. Unions two tables, both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'a, 'b, 'c);
-val result = left.unionAll(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'a, 'b, 'c)
+val result = left.unionAll(right)
 {% endhighlight %}
       </td>
     </tr>
@@ -860,9 +862,9 @@ val result = left.unionAll(right);
       <td>
         <p>Similar to a SQL INTERSECT clause. Intersect returns records that exist in both tables. If a record is present in one or both tables more than once, it is returned just once, i.e., the resulting table has no duplicate records. Both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'e, 'f, 'g);
-val result = left.intersect(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'e, 'f, 'g)
+val result = left.intersect(right)
 {% endhighlight %}
       </td>
     </tr>
@@ -875,9 +877,9 @@ val result = left.intersect(right);
       <td>
         <p>Similar to a SQL INTERSECT ALL clause. IntersectAll returns records that exist in both tables. If a record is present in both tables more than once, it is returned as many times as it is present in both tables, i.e., the resulting table might have duplicate records. Both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'e, 'f, 'g);
-val result = left.intersectAll(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'e, 'f, 'g)
+val result = left.intersectAll(right)
 {% endhighlight %}
       </td>
     </tr>
@@ -890,9 +892,9 @@ val result = left.intersectAll(right);
       <td>
         <p>Similar to a SQL EXCEPT clause. Minus returns records from the left table that do not exist in the right table. Duplicate records in the left table are returned exactly once, i.e., duplicates are removed. Both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'a, 'b, 'c);
-val result = left.minus(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'a, 'b, 'c)
+val result = left.minus(right)
 {% endhighlight %}
       </td>
     </tr>
@@ -905,13 +907,12 @@ val result = left.minus(right);
       <td>
         <p>Similar to a SQL EXCEPT ALL clause. MinusAll returns the records that do not exist in the right table. A record that is present n times in the left table and m times in the right table is returned (n - m) times, i.e., as many duplicates as are present in the right table are removed. Both tables must have identical field types.</p>
 {% highlight scala %}
-val left = ds1.toTable(tableEnv, 'a, 'b, 'c);
-val right = ds2.toTable(tableEnv, 'a, 'b, 'c);
-val result = left.minusAll(right);
+val left = ds1.toTable(tableEnv, 'a, 'b, 'c)
+val right = ds2.toTable(tableEnv, 'a, 'b, 'c)
+val result = left.minusAll(right)
 {% endhighlight %}
       </td>
     </tr>
-
   </tbody>
 </table>
 </div>
@@ -940,8 +941,8 @@ val result = left.minusAll(right);
       <td>
         <p>Similar to a SQL ORDER BY clause. Returns records globally sorted across all parallel partitions.</p>
 {% highlight scala %}
-val in = ds.toTable(tableEnv, 'a, 'b, 'c);
-val result = in.orderBy('a.asc);
+val in = ds.toTable(tableEnv, 'a, 'b, 'c)
+val result = in.orderBy('a.asc)
 {% endhighlight %}
       </td>
     </tr>
@@ -1433,7 +1434,7 @@ The `OverWindow` defines a range of rows over which aggregates are computed. `Ov
 Data Types
 ----------
 
-The Table API is built on top of Flink's DataSet and DataStream API. Internally, it also uses Flink's `TypeInformation` to distinguish between types. The Table API does not support all Flink types so far. All supported simple types are listed in `org.apache.flink.table.api.Types`. The following table summarizes the relation between Table API types, SQL types, and the resulting Java class.
+The Table API is built on top of Flink's DataSet and DataStream APIs. Internally, it also uses Flink's `TypeInformation` to define data types. Fully supported types are listed in `org.apache.flink.table.api.Types`. The following table summarizes the relation between Table API types, SQL types, and the resulting Java class.
 
 | Table API              | SQL                         | Java type              |
 | :--------------------- | :-------------------------- | :--------------------- |
@@ -1455,14 +1456,7 @@ The Table API is built on top of Flink's DataSet and DataStream API. Internally,
 | `Types.OBJECT_ARRAY`   | `ARRAY`                     | e.g. `java.lang.Byte[]`|
 | `Types.MAP`            | `MAP`                       | `java.util.HashMap`    |
 
-
-Advanced types such as generic types, composite types (e.g. POJOs or Tuples), and array types (object or primitive arrays) can be fields of a row. 
-
-Generic types are treated as a black box within Table API and SQL yet.
-
-Composite types, however, are fully supported types where fields of a composite type can be accessed using the `.get()` operator in Table API and dot operator (e.g. `MyTable.pojoColumn.myField`) in SQL. Composite types can also be flattened using `.flatten()` in Table API or `MyTable.pojoColumn.*` in SQL.
-
-Array types can be accessed using the `myArray.at(1)` operator in Table API and `myArray[1]` operator in SQL. Array literals can be created using `array(1, 2, 3)` in Table API and `ARRAY[1, 2, 3]` in SQL.
+Generic types and composite types (e.g., POJOs or Tuples) can be fields of a row as well. Generic types are treated as a black box and can be passed on or processed by [user-defined functions](udfs.html). Composite types can be accessed with [built-in functions](#built-in-functions) (see *Value access functions* section).
 
 **TODO: Clean-up and move relevant parts to the "Mappings Types to Table Schema" section of the Common Concepts & API page.**
 
@@ -1547,7 +1541,7 @@ Temporal intervals can be represented as number of months (`Types.INTERVAL_MONTH
 Built-In Functions
 ------------------
 
-Both the Table API and SQL come with a set of built-in functions for data transformations. This section gives a brief overview of the available functions so far.
+The Table API comes with a set of built-in functions for data transformations. This section gives a brief overview of the available functions.
 
 <div class="codetabs" markdown="1">
 <div data-lang="java" markdown="1">
@@ -2266,28 +2260,6 @@ ANY.cast(TYPE)
     <tr>
       <td>
         {% highlight java %}
-ARRAY.at(INT)
-{% endhighlight %}
-      </td>
-      <td>
-        <p>Returns the element at a particular position in an array. The index starts at 1.</p>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        {% highlight java %}
-array(ANY [, ANY ]*)
-{% endhighlight %}
-      </td>
-      <td>
-        <p>Creates an array from a list of values. The array will be an array of objects (not primitives).</p>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        {% highlight java %}
 NUMERIC.rows
 {% endhighlight %}
       </td>
@@ -2712,11 +2684,33 @@ ANY.flatten()
     <tr>
       <td>
         {% highlight java %}
+array(ANY [, ANY ]*)
+{% endhighlight %}
+      </td>
+      <td>
+        <p>Creates an array from a list of values. The array will be an array of objects (not primitives).</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        {% highlight java %}
 ARRAY.cardinality()
 {% endhighlight %}
       </td>
       <td>
         <p>Returns the number of elements of an array.</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        {% highlight java %}
+ARRAY.at(INT)
+{% endhighlight %}
+      </td>
+      <td>
+        <p>Returns the element at a particular position in an array. The index starts at 1.</p>
       </td>
     </tr>
 
@@ -3473,28 +3467,6 @@ ANY.cast(TYPE)
     <tr>
       <td>
         {% highlight scala %}
-ARRAY.at(INT)
-{% endhighlight %}
-      </td>
-      <td>
-        <p>Returns the element at a particular position in an array. The index starts at 1.</p>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        {% highlight scala %}
-array(ANY [, ANY ]*)
-{% endhighlight %}
-      </td>
-      <td>
-        <p>Creates an array from a list of values. The array will be an array of objects (not primitives).</p>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        {% highlight scala %}
 NUMERIC.rows
 {% endhighlight %}
       </td>
@@ -3917,11 +3889,33 @@ ANY.flatten()
     <tr>
       <td>
         {% highlight scala %}
+array(ANY [, ANY ]*)
+{% endhighlight %}
+      </td>
+      <td>
+        <p>Creates an array from a list of values. The array will be an array of objects (not primitives).</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        {% highlight scala %}
 ARRAY.cardinality()
 {% endhighlight %}
       </td>
       <td>
         <p>Returns the number of elements of an array.</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        {% highlight scala %}
+ARRAY.at(INT)
+{% endhighlight %}
+      </td>
+      <td>
+        <p>Returns the element at a particular position in an array. The index starts at 1.</p>
       </td>
     </tr>
 

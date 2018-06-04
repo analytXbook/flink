@@ -113,7 +113,7 @@ object WindowWordCount {
       .timeWindow(Time.seconds(5))
       .sum(1)
 
-    counts.print
+    counts.print()
 
     env.execute("Window Stream WordCount")
   }
@@ -1594,9 +1594,6 @@ The `StreamExecutionEnvironment` contains the `ExecutionConfig` which allows to 
 Please refer to [execution configuration]({{ site.baseurl }}/dev/execution_configuration.html)
 for an explanation of most parameters. These parameters pertain specifically to the DataStream API:
 
-- `enableTimestamps()` / **`disableTimestamps()`**: Attach a timestamp to each event emitted from a source.
-    `areTimestampsEnabled()` returns the current value.
-
 - `setAutoWatermarkInterval(long milliseconds)`: Set the interval for automatic watermark emission. You can
     get the current value with `long getAutoWatermarkInterval()`
 
@@ -1753,7 +1750,7 @@ import org.apache.flink.contrib.streaming.DataStreamUtils
 import scala.collection.JavaConverters.asScalaIteratorConverter
 
 val myResult: DataStream[(String, Int)] = ...
-val myOutput: Iterator[(String, Int)] = DataStreamUtils.collect(myResult.getJavaStream).asScala
+val myOutput: Iterator[(String, Int)] = DataStreamUtils.collect(myResult.javaStream).asScala
 {% endhighlight %}
 </div>
 </div>

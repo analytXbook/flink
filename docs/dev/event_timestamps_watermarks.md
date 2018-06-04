@@ -61,7 +61,7 @@ There are two ways to assign timestamps and generate watermarks:
   2. Via a timestamp assigner / watermark generator: in Flink timestamp assigners also define the watermarks to be emitted
 
 <span class="label label-danger">Attention</span> Both timestamps and watermarks are specified as
-millliseconds since the Java epoch of 1970-01-01T00:00:00Z.
+milliseconds since the Java epoch of 1970-01-01T00:00:00Z.
 
 ### Source Functions with Timestamps and Watermarks
 
@@ -154,7 +154,7 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
 val stream: DataStream[MyEvent] = env.readFile(
          myFormat, myFilePath, FileProcessingMode.PROCESS_CONTINUOUSLY, 100,
-         FilePathFilter.createDefaultFilter());
+         FilePathFilter.createDefaultFilter())
 
 val withTimestampsAndWatermarks: DataStream[MyEvent] = stream
         .filter( _.severity == WARNING )
@@ -240,19 +240,19 @@ public class TimeLagWatermarkGenerator extends AssignerWithPeriodicWatermarks<My
  */
 class BoundedOutOfOrdernessGenerator extends AssignerWithPeriodicWatermarks[MyEvent] {
 
-    val maxOutOfOrderness = 3500L; // 3.5 seconds
+    val maxOutOfOrderness = 3500L // 3.5 seconds
 
-    var currentMaxTimestamp: Long;
+    var currentMaxTimestamp: Long
 
     override def extractTimestamp(element: MyEvent, previousElementTimestamp: Long): Long = {
         val timestamp = element.getCreationTime()
         currentMaxTimestamp = max(timestamp, currentMaxTimestamp)
-        timestamp;
+        timestamp
     }
 
     override def getCurrentWatermark(): Watermark = {
         // return the watermark as current highest timestamp minus the out-of-orderness bound
-        new Watermark(currentMaxTimestamp - maxOutOfOrderness);
+        new Watermark(currentMaxTimestamp - maxOutOfOrderness)
     }
 }
 
@@ -262,7 +262,7 @@ class BoundedOutOfOrdernessGenerator extends AssignerWithPeriodicWatermarks[MyEv
  */
 class TimeLagWatermarkGenerator extends AssignerWithPeriodicWatermarks[MyEvent] {
 
-    val maxTimeLag = 5000L; // 5 seconds
+    val maxTimeLag = 5000L // 5 seconds
 
     override def extractTimestamp(element: MyEvent, previousElementTimestamp: Long): Long = {
         element.getCreationTime
@@ -338,7 +338,7 @@ Kafka consumer, per Kafka partition, and the per-partition watermarks are merged
 For example, if event timestamps are strictly ascending per Kafka partition, generating per-partition watermarks with the
 [ascending timestamps watermark generator](event_timestamp_extractors.html#assigners-with-ascending-timestamps) will result in perfect overall watermarks.
 
-The illustrations below show how to use ther per-Kafka-partition watermark generation, and how watermarks propagate through the
+The illustrations below show how to use the per-Kafka-partition watermark generation, and how watermarks propagate through the
 streaming dataflow in that case.
 
 
