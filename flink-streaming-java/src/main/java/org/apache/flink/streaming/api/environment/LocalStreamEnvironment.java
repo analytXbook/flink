@@ -124,23 +124,11 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 
 		JobGraph jobGraph = streamGraph.getJobGraph();
 
-		Configuration configuration = new Configuration();
-		configuration.addAll(jobGraph.getJobConfiguration());
-
-		configuration.setLong(TaskManagerOptions.MANAGED_MEMORY_SIZE, -1L);
-		configuration.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, jobGraph.getMaximumParallelism());
-
-		// add (and override) the settings with what the user defined
-		configuration.addAll(this.conf);
-
 		if (LOG.isInfoEnabled()) {
 			LOG.info("Running job on local embedded Flink mini cluster");
 		}
 
-		if (exec == null) {
-			exec = new LocalFlinkMiniCluster(configuration, true);
-			exec.start();
-		}
+		LocalFlinkMiniCluster exec = getCluster();
 
 		if (detached) {
 			return exec.submitJobDetached(jobGraph);
@@ -155,19 +143,34 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		}
 	}
 
+	private Configuration getLocalConfig() {
+		Configuration configuration = new Configuration();
+		configuration.addAll(this.conf);
+
+		configuration.setLong(TaskManagerOptions.MANAGED_MEMORY_SIZE, -1L);
+		configuration.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, getMaxParallelism());
+		return configuration;
+	}
+
+	private LocalFlinkMiniCluster getCluster() {
+		if (exec == null) {
+			exec = new LocalFlinkMiniCluster(getLocalConfig(), true);
+			exec.start();
+		}
+		return exec;
+	}
+
 	@Override
 	public ClusterClient getClusterClient() throws Exception{
 		class LocalFlinkMiniClusterClient extends ClusterClient {
 			LocalFlinkMiniCluster cluster;
 			public LocalFlinkMiniClusterClient(Configuration configuration) throws Exception {
 				super(configuration);
-				this.cluster = exec;
+				this.cluster = getCluster();
 			}
 
 			@Override
-			public void waitForClusterToBeReady() {
-
-			}
+			public void waitForClusterToBeReady() { }
 
 			@Override
 			public String getWebInterfaceURL() {
@@ -190,14 +193,10 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 			}
 
 			@Override
-			protected void finalizeCluster() {
-
-			}
+			protected void finalizeCluster() { }
 
 			@Override
-			public int getMaxSlots() {
-				return 0;
-			}
+			public int getMaxSlots() { return 0; }
 
 			@Override
 			public boolean hasUserJarsInClassPath(List<URL> userJarFiles) {
@@ -214,11 +213,6 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 			}
 		}
 
-		Configuration configuration = new Configuration();
-		configuration.addAll(this.conf);
-
-		configuration.setLong(TaskManagerOptions.MANAGED_MEMORY_SIZE, -1L);
-		configuration.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, getMaxParallelism());
-		return new LocalFlinkMiniClusterClient(configuration);
+		return new LocalFlinkMiniClusterClient(getLocalConfig());
 	}
 }
