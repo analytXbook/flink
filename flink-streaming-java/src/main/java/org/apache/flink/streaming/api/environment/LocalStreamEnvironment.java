@@ -17,6 +17,9 @@
 
 package org.apache.flink.streaming.api.environment;
 
+import java.net.URL;
+import java.util.List;
+
 import org.apache.flink.annotation.Public;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
@@ -36,8 +39,6 @@ import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
-import java.util.List;
 
 /**
  * The LocalStreamEnvironment is a StreamExecutionEnvironment that runs the program locally,
@@ -93,7 +94,7 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 	 */
 	@Override
 	public JobSubmissionResult executeDetached(String jobName) throws Exception {
-		return execute(jobName);
+		return execute(jobName, true);
 	}
 
 	/**
@@ -131,7 +132,9 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		LocalFlinkMiniCluster exec = getCluster();
 
 		if (detached) {
-			return exec.submitJobDetached(jobGraph);
+			JobSubmissionResult res = exec.submitJobDetached(jobGraph);
+			transformations.clear();
+			return res;
 		} else {
 			try {
 				return exec.submitJobAndWait(jobGraph, getConfig().isSysoutLoggingEnabled());
@@ -196,7 +199,9 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 			protected void finalizeCluster() { }
 
 			@Override
-			public int getMaxSlots() { return 0; }
+			public int getMaxSlots() {
+				return 0;
+			}
 
 			@Override
 			public boolean hasUserJarsInClassPath(List<URL> userJarFiles) {
@@ -212,14 +217,14 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 				}
 			}
 
-            @Override
-            public JobSubmissionResult runDetached (JobGraph jobGraph, ClassLoader classLoader) throws ProgramInvocationException {
-                try {
-                    return cluster.submitJobDetached(jobGraph);
-                } catch (JobExecutionException e) {
-                    throw new ProgramInvocationException(e.getMessage());
-                }
-            }
+			@Override
+			public JobSubmissionResult runDetached (JobGraph jobGraph, ClassLoader classLoader) throws ProgramInvocationException {
+				try {
+					return cluster.submitJobDetached(jobGraph);
+				} catch (JobExecutionException e) {
+					throw new ProgramInvocationException(e.getMessage());
+				}
+			}
 		}
 
 		return new LocalFlinkMiniClusterClient(getLocalConfig());
