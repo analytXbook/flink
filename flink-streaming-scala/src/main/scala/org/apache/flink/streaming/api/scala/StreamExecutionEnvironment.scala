@@ -20,12 +20,14 @@ package org.apache.flink.streaming.api.scala
 
 import com.esotericsoftware.kryo.Serializer
 import org.apache.flink.annotation.{Internal, Public, PublicEvolving}
+import org.apache.flink.api.common.{JobExecutionResult, JobID}
 import org.apache.flink.api.common.io.{FileInputFormat, FilePathFilter, InputFormat}
 import org.apache.flink.api.common.restartstrategy.RestartStrategies.RestartStrategyConfiguration
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
 import org.apache.flink.api.scala.ClosureCleaner
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.runtime.jobgraph.JobGraph
 import org.apache.flink.runtime.state.AbstractStateBackend
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironment => JavaEnv}
 import org.apache.flink.streaming.api.functions.source._
@@ -656,6 +658,15 @@ class StreamExecutionEnvironment(javaEnv: JavaEnv) {
    * The program execution will be logged and displayed with the provided name.
    */
   def execute(jobName: String) = javaEnv.execute(jobName)
+
+  def runDetached(jobGraph: JobGraph, classloader: ClassLoader) =
+    javaEnv.runDetached(jobGraph, classloader)
+
+  def retrieveJob(jobID: JobID) = javaEnv.retrieveJob(jobID)
+
+  def cancelJob(jobID: JobID): Unit = javaEnv.cancelJob(jobID)
+
+  def stopJob(jobID: JobID): Unit = javaEnv.stopJob(jobID)
 
   def getClusterClient() = javaEnv.getClusterClient()
 

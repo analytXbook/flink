@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.flink.annotation.Public;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.client.program.ClusterClient;
@@ -60,7 +61,7 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 	/** The configuration to use for the local cluster. */
 	private final Configuration conf;
 
-	LocalFlinkMiniCluster exec;
+	LocalFlinkMiniCluster exec = null;
 
 	/**
 	 * Creates a new local stream environment that uses the default configuration.
@@ -124,7 +125,18 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		streamGraph.setJobName(jobName);
 
 		JobGraph jobGraph = streamGraph.getJobGraph();
+		return execute(jobGraph, detached);
+	}
 
+	/**
+	 * Executes the JobGraph of the on a mini cluster of CLusterUtil with a user
+	 * specified name.
+	 *
+	 * @param jobGraph
+	 *            name of the job
+	 * @return The result of the job execution, containing elapsed time and accumulators.
+	 */
+	public JobSubmissionResult execute(JobGraph jobGraph, boolean detached) throws Exception {
 		if (LOG.isInfoEnabled()) {
 			LOG.info("Running job on local embedded Flink mini cluster");
 		}
@@ -146,12 +158,30 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		}
 	}
 
+	@Override
+	public JobSubmissionResult runDetached(JobGraph jobGraph, ClassLoader classLoader) throws Exception {
+		return execute(jobGraph, true);
+	}
+
+	@Override
+	public void cancelJob(JobID jobID) throws Exception {
+		stopJob(jobID);
+	}
+
+	@Override
+	public void stopJob(JobID jobID) throws Exception {
+		LocalFlinkMiniCluster cluster = getCluster();
+		cluster.stopJob(jobID);
+	}
+
 	private Configuration getLocalConfig() {
 		Configuration configuration = new Configuration();
 		configuration.addAll(this.conf);
 
 		configuration.setLong(TaskManagerOptions.MANAGED_MEMORY_SIZE, -1L);
 		configuration.setInteger(ConfigConstants.TASK_MANAGER_NUM_TASK_SLOTS, getMaxParallelism());
+		configuration.setString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, "localhost");
+		configuration.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, 6123);
 		return configuration;
 	}
 
@@ -224,6 +254,17 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 				} catch (JobExecutionException e) {
 					throw new ProgramInvocationException(e.getMessage());
 				}
+			}
+
+			@Override
+			public void cancel(JobID jobID) throws Exception {
+				stop(jobID);
+			}
+
+			@Override
+			public void stop(JobID jobID) throws Exception {
+				LocalFlinkMiniCluster cluster = getCluster();
+				cluster.stopJob(jobID);
 			}
 		}
 

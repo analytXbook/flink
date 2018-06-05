@@ -33,6 +33,7 @@ import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.cache.DistributedCache;
 import org.apache.flink.api.common.functions.InvalidTypesException;
@@ -61,6 +62,7 @@ import org.apache.flink.client.program.PreviewPlanEnvironment;
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.state.AbstractStateBackend;
 import org.apache.flink.runtime.state.KeyGroupRangeAssignment;
 import org.apache.flink.streaming.api.CheckpointingMode;
@@ -1547,6 +1549,22 @@ public abstract class StreamExecutionEnvironment {
 	 * @throws Exception which occurs during job execution.
 	 */
 	public abstract JobSubmissionResult executeDetached(String jobName) throws Exception;
+
+	public JobSubmissionResult runDetached(JobGraph jobGraph, ClassLoader classLoader) throws Exception {
+		throw new Exception("Not implemented");
+	}
+
+	public JobExecutionResult retrieveJob(JobID jobID) throws Exception {
+		throw new Exception("Not implemented");
+	}
+
+	public void cancelJob(JobID jobID) throws Exception {
+		throw new Exception("Not implemented");
+	}
+
+	public void stopJob(JobID jobID) throws Exception {
+		throw new Exception("Not implemented");
+	}
 
 	/**
 	 * Getter of the {@link org.apache.flink.streaming.api.graph.StreamGraph} of the streaming job.

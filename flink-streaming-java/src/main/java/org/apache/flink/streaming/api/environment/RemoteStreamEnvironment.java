@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.flink.annotation.Public;
 import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.client.program.ClusterClient;
@@ -39,6 +40,7 @@ import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 
 import org.apache.flink.configuration.JobManagerOptions;
+import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,6 +239,30 @@ public class RemoteStreamEnvironment extends StreamExecutionEnvironment {
 				LOG.warn("Could not properly shut down the cluster client.", e);
 			}
 		}
+	}
+
+	@Override
+	public JobSubmissionResult runDetached(JobGraph jobGraph, ClassLoader classLoader) throws Exception {
+		ClusterClient client = getClusterClient();
+		return client.runDetached(jobGraph, classLoader);
+	}
+
+	@Override
+	public JobExecutionResult retrieveJob(JobID jobID) throws Exception {
+		ClusterClient client = getClusterClient();
+		return client.retrieveJob(jobID);
+	}
+
+	@Override
+	public void cancelJob(JobID jobID) throws Exception {
+		ClusterClient client = getClusterClient();
+		client.cancel(jobID);
+	}
+
+	@Override
+	public void stopJob(JobID jobID) throws Exception {
+		ClusterClient client = getClusterClient();
+		client.stop(jobID);
 	}
 
 	@Override
